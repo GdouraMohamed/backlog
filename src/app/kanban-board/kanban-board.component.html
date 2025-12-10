@@ -1,0 +1,52 @@
+<div class="top">
+  <input data-test-id="create-task-input"
+         [(ngModel)]="newTaskName" />
+
+  <button data-test-id="create-task-button"
+          (click)="createTask()">
+    Create task
+  </button>
+</div>
+
+<div class="board">
+
+  <div class="stage" *ngFor="let stage of stagesNames; let i = index">
+    <h3>{{ stage }}</h3>
+
+    <ul [attr.data-test-id]="'stage-' + i">
+      <li *ngFor="let task of stagesTasks[i]">
+        
+        <span [attr.data-test-id]="generateTestId(task.name) + '-name'">
+          {{ task.name }}
+        </span>
+
+        <div>
+          <!-- back -->
+          <button
+            [attr.data-test-id]="generateTestId(task.name) + '-back'"
+            (click)="moveBack(task)"
+            [disabled]="task.stage === 0">
+            <=
+          </button>
+
+          <!-- forward -->
+          <button
+            [attr.data-test-id]="generateTestId(task.name) + '-forward'"
+            (click)="moveForward(task)"
+            [disabled]="task.stage === 3">
+            =>
+          </button>
+
+          <!-- delete -->
+          <button
+            [attr.data-test-id]="generateTestId(task.name) + '-delete'"
+            (click)="deleteTask(task)">
+            ||
+          </button>
+        </div>
+
+      </li>
+    </ul>
+  </div>
+
+</div>
