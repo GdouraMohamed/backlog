@@ -1,0 +1,71 @@
+stages:
+  - test
+  - quality
+  - build
+  - deploy
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - node_modules/
+
+variables:
+  NODE_ENV: test
+  CI: "true"
+
+image: node:20
+
+before_script:
+  - npm ci
+
+# -----------------
+# TEST JOB
+# -----------------
+unit_tests:
+  stage: test
+  script:
+    - npm run test -- --watch=false --browsers=ChromeHeadless --karma-config=karma.conf.ci.js
+  artifacts:
+    when: always
+    paths:
+      - coverage/
+    expire_in: 7 days
+
+# -----------------
+# SONARQUBE JOB
+# -----------------
+# Requires GitLab → Settings → CI/CD → Variables:
+# SONAR_HOST_URL, SONAR_LOGIN, SONAR_PROJECT_KEY
+code_quality:
+  stage: quality
+  image:
+    name: sonarsource/sonar-scanner-cli:latest
+    entrypoint: [""]
+  script:
+    - sonar-scanner -Dsonar.projectKey=$SONAR_PROJECT_KEY
+  allow_failure: false
+
+# -----------------
+# BUILD JOB
+# -----------------
+build_app:
+  stage: build
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 7 days
+
+# -----------------
+# STAGING DEPLOY (GitLab Pages)
+# -----------------
+deploy_staging:
+  stage: deploy
+  script:
+    - mv dist/* public/
+  artifacts:
+    paths:
+      - public
+  only:
+    - main
